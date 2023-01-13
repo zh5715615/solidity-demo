@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
 
 contract ViewPure {
-    string value = "Hello World";
+    string value = "Hello";
+
+    uint256 number = 1234;
 
     //pure不能get
     // function pure_get_func() public pure returns (string memory) {
@@ -25,5 +28,10 @@ contract ViewPure {
 
     function view_set_func(string memory _value) public {
         value = _value;
+    }
+
+    function toHexString() public view returns (string memory) {
+        string memory hexStr = Strings.toHexString(number);
+        return hexStr;
     }
 }
