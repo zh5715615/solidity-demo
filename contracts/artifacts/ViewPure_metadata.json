@@ -1,0 +1,72 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "view_get_func",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_value",
+						"type": "string"
+					}
+				],
+				"name": "view_set_func",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/ViewPure.sol": "ViewPure"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/ViewPure.sol": {
+			"keccak256": "0xffae1a995f2cddca21ea6606ec8e4895bbc060b302aaeff1bf5f0ecc9aaf0fda",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://2769538af0dfbe13bb09b76d566751a0e03e7baf535eacf8cea5eec5b7f7e660",
+				"dweb:/ipfs/QmaV6Q7MMAcwstKf3tJNarz82FVwb1ojHtVGGXRYC86SDR"
+			]
+		}
+	},
+	"version": 1
+}
