@@ -30,8 +30,15 @@ contract ViewPure {
         value = _value;
     }
 
+    // 数字转十六进制字符串
     function toHexString() public view returns (string memory) {
         string memory hexStr = Strings.toHexString(number);
         return hexStr;
+    }
+
+    //string转bytes, 测试keccak256算法
+    function testKeccak256(string memory str) public pure returns (bytes32) {
+        bytes memory bts = bytes(str);
+        return keccak256(bts);
     }
 }
