@@ -27,7 +27,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * NOTE: When using this contract with any token whose balance is adjusted automatically (i.e. a rebase token), make
  * sure to account the supply/balance adjustment in the vesting schedule to ensure the vested amount is as intended.
  */
- // 第一个版本: 0xc1d15057f8a0fe0f711972354075dbb500398f30
+ // 第一个版本: 0x87cc943f90b0620158332021791694509cf563dc
 contract MinePool is Context, Ownable {
 
     struct Miner {
@@ -54,7 +54,7 @@ contract MinePool is Context, Ownable {
     }
 
     //分配矿机
-    function allockMineMachine(address account) public virtual onlyOwner {
+    function allocMineMachine(address account) public virtual onlyOwner {
         require(mineMachineAccounts[account] == false, "This account has already purchased a mining machine");
         uint64 start = uint64(block.timestamp);
         mineMachineAccounts[account] = true;
@@ -73,7 +73,7 @@ contract MinePool is Context, Ownable {
         if (timestamp < miners[account].startTime) {
             return 0;
         } else if (timestamp > miners[account].startTime + duration) {
-            return miners[account].mineable;
+            return miners[account].mineable - miners[account].released;
         } else {
             uint256 totalAllocation = miners[account].mineable;
             return (totalAllocation * (timestamp - startTime(account))) / duration - miners[account].released;
