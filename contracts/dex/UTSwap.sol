@@ -97,8 +97,9 @@ contract UTSwap is Context, Ownable {
 
     //购买矿机
     function buyMiningMachine(uint miningMachineType) public virtual {
-        require(miningMachinePrices[miningMachineType] !=0, "Mining machine type does not exist");
-        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), getMingingMachinePrice(miningMachineType));
+        uint256 price = miningMachinePrices[miningMachineType];
+        require(price !=0, "Mining machine type does not exist");
+        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), price);
         emit BuyMiningMachine(msg.sender, miningMachineType);
     }
 
@@ -109,8 +110,9 @@ contract UTSwap is Context, Ownable {
 
     //购买道具
     function buyProp(uint propType) public virtual {
-        require(mingingFuelPrices[propType] != 0, "Mining prop type does not exist");
-        SafeERC20.safeTransferFrom(tatgToken, msg.sender, address(this), getMingingPropPrice(propType));
+        uint256 price = mingingPropPrices[propType];
+        require(price != 0, "Mining prop type does not exist");
+        SafeERC20.safeTransferFrom(tatgToken, msg.sender, address(this), price);
         emit BuyMiningProp(msg.sender, propType);
     }
 
@@ -121,8 +123,9 @@ contract UTSwap is Context, Ownable {
 
     //购买燃料
     function buyFuel(uint fuelType) public virtual {
-        require(mingingFuelPrices[fuelType] != 0, "Mining fuel type does not exist");
-        SafeERC20.safeTransferFrom(tatgToken, msg.sender, address(this), getMingingFuelPrice(fuelType));
+        uint256 price = mingingFuelPrices[fuelType];
+        require(price != 0, "Mining fuel type does not exist");
+        SafeERC20.safeTransferFrom(tatgToken, msg.sender, address(this), price);
         emit BuyMiningFuel(msg.sender, fuelType);
     }
 
@@ -144,7 +147,9 @@ contract UTSwap is Context, Ownable {
     //开通工具栏
     function openToolBar() public virtual {
         uint index = getUserToolBarIndex(msg.sender);
-        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), getOpenToolBarPrice(index));
+        uint256 price = getOpenToolBarPrice(index);
+        require(price != 0, "The toolbar is not yet open");
+        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), price);
         emit OpenToolBar(msg.sender, index);
     }
 
@@ -153,7 +158,7 @@ contract UTSwap is Context, Ownable {
         return backpackPrices[index];
     }
 
-    //获取用户工具栏索引
+    //获取用户背包栏索引
     function getUserBackpackIndex(address user) public view virtual returns (uint) {
         uint userBackpackSize = userBackpack[user].length;
         uint index = 0;
@@ -166,18 +171,35 @@ contract UTSwap is Context, Ownable {
     //开通背包栏
     function openBackpack() public virtual {
         uint index = getUserBackpackIndex(msg.sender);
-        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), getOpenBackpackPrice(index));
+        uint256 price = getOpenBackpackPrice(index);
+        require(price != 0, "The backpack is not yet open");
+        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), price);
         emit OpenBackpack(msg.sender, index);
+    }
+    
+    //获取底池usdt余额
+    function getUsdtBalance() public view virtual returns (uint256) {
+        return usdtToken.balanceOf(address(this));
+    }
+
+    //获取底池tatg余额
+    function getTatgBalance() public view virtual returns (uint256) {
+        return tatgToken.balanceOf(address(this));
+    }
+
+    //获取内置交易所usdt和tatg的汇率，1个tatg能换多少usdt
+    function getSwapRate() public view virtual returns (uint256) {
+        uint256 usdtBalance = getUsdtBalance();
+        uint256 tatgBalance = getTatgBalance();
+        return (usdtBalance / usdtTokenDecimals)  / ((tatgTokenTotalSupply - tatgBalance) / tatgTokenDecimals);
     }
 
     //交易
     function transfer(uint256 tatgNumber) public virtual {
-        uint256 usdtBalance = usdtToken.balanceOf(address(this));
-        uint256 tatgTokenBalance = tatgToken.balanceOf(address(this));
-        uint rate = (usdtBalance / usdtTokenDecimals)  / ((tatgTokenTotalSupply - tatgTokenBalance) / tatgTokenDecimals);
+        uint rate = getSwapRate();
         uint swapUsdtAmount = tatgNumber * rate / 2;
-        tatgToken.transferFrom(msg.sender, address(this), tatgNumber);
-        usdtToken.transfer(msg.sender, swapUsdtAmount);
+        SafeERC20.safeTransferFrom(tatgToken, msg.sender, address(this), tatgNumber);
+        SafeERC20.safeTransfer(usdtToken, msg.sender, swapUsdtAmount);
         emit Transfer(msg.sender, tatgNumber);
     }
 
