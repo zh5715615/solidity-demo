@@ -9,10 +9,6 @@ import {Context} from "../ERC20/utils/Context.sol";
 import {Ownable} from "../ERC20/access/Ownable.sol";
 import {IExpandERC20} from "./IExpandErc20.sol";
 
-// TATG: 0xf0f2a25674df5f0b1ef8a8d475c326a66e3a769e
-// USDT: 0x59B6e82Bd9425F69856c9Ff7D715A6273c6959DC
-// ACC : 0xa24bDb249e80574A96D8B02b148E81B9be684675
-// CONTRACT_ADDRESS: 0xFc39F4eA5d36a6b9cbfFe5ED99f8ac12003b3ce7
 contract UTSwap is Context, Ownable {
     IExpandERC20 public tatgToken; //tatg代币
 
@@ -191,13 +187,15 @@ contract UTSwap is Context, Ownable {
     function getSwapRate() public view virtual returns (uint256) {
         uint256 usdtBalance = getUsdtBalance();
         uint256 tatgBalance = getTatgBalance();
-        return (usdtBalance / usdtTokenDecimals)  / ((tatgTokenTotalSupply - tatgBalance) / tatgTokenDecimals);
+        uint256 tatgMinUint = 10 ** tatgTokenDecimals;
+        return usdtBalance / ((tatgTokenTotalSupply - tatgBalance) / tatgMinUint);
     }
 
     //交易
     function transfer(uint256 tatgNumber) public virtual {
-        uint rate = getSwapRate();
-        uint swapUsdtAmount = tatgNumber * rate / 2;
+        uint256 rate = getSwapRate();
+        uint256 tatgMinUint = 10 ** tatgTokenDecimals;
+        uint swapUsdtAmount = ((tatgNumber * rate) / tatgMinUint)  / 2;
         SafeERC20.safeTransferFrom(tatgToken, msg.sender, address(this), tatgNumber);
         SafeERC20.safeTransfer(usdtToken, msg.sender, swapUsdtAmount);
         emit Transfer(msg.sender, tatgNumber);
