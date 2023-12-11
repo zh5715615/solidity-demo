@@ -41,4 +41,19 @@ contract ViewPure {
         bytes memory bts = bytes(str);
         return keccak256(bts);
     }
+
+    function getSwapRate() public view virtual returns (uint256) {
+        uint256 usdtBalance = 20000000000;
+        uint256 tatgBalance = 199980000000000000000000000;
+        uint256 tatgMinUint = 10 ** 18;
+        return usdtBalance / ((200000000000000000000000000 - tatgBalance) / tatgMinUint);
+    }
+
+    //交易
+    function transfer(uint256 tatgNumber) public view returns (uint256) {
+        uint256 rate = getSwapRate();
+        uint256 tatgMinUint = 10 ** 18;
+        uint swapUsdtAmount = (tatgNumber * rate) / tatgMinUint;
+        return swapUsdtAmount;
+    }
 }
