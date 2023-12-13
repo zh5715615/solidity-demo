@@ -43,7 +43,7 @@ contract ViewPure {
     }
 
     function getSwapRate() public view virtual returns (uint256) {
-        uint256 usdtBalance = 20000000000;
+        uint256 usdtBalance = 10000000000;
         uint256 tatgBalance = 199980000000000000000000000;
         uint256 tatgMinUint = 10 ** 18;
         return usdtBalance / ((200000000000000000000000000 - tatgBalance) / tatgMinUint);

@@ -9,6 +9,6 @@ contract USDT is ERC20 {
     }
 
     function decimals() override public pure returns (uint8) {
-        return 6;
+        return 18;
     }
 }

@@ -32,7 +32,9 @@ contract UTSwap is Context, Ownable {
 
     mapping(uint => uint256) mingingFuelPrices;   //矿机燃料对应价格
 
-    mapping(uint => uint256) toolBarPrices;       //开通工具栏对应价格
+    uint256 toolBarPrice;       //开通工具栏对应价格
+
+    uint256 backpackPrice;     //开通背包栏对应价格   
 
     mapping(uint => uint256) backpackPrices;      //开通背包栏对应价格
 
@@ -54,36 +56,35 @@ contract UTSwap is Context, Ownable {
         tatgTokenTotalSupply = tatgToken.totalSupply();     //获取tatgToken的发行量
         usdtTokenDecimals = usdtToken.decimals();           //获取usdt精度
         tatgTokenDecimals = tatgToken.decimals();           //获取tatg精度
-    }
 
-    //运维人员使用，添加矿机类型
-    function addMiningMachineType(uint miningMachineType, uint256 price) onlyOwner public virtual {
-        //TODO 是否允许多次定义矿机价格，如果是则这里就这么写，如果不是则加判重条件
-        miningMachinePrices[miningMachineType] = price;
-    }
+        //矿机定价
+        miningMachinePrices[1] = 60 * (10 ** usdtTokenDecimals);
+        miningMachinePrices[4] = 150 * (10 ** usdtTokenDecimals);
+        miningMachinePrices[5] = 400 * (10 ** usdtTokenDecimals);
+        miningMachinePrices[6] = 1200 * (10 ** usdtTokenDecimals);
 
-    //运维人员使用，添加矿机道具类型
-    function addPropType(uint propType, uint256 price) onlyOwner public virtual {
-        //TODO 是否允许多次定义道具价格，如果是则这里就这么写，如果不是则加判重条件
-        mingingPropPrices[propType] = price;
-    }
+        //道具定价
+        mingingPropPrices[3] = 10 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[10] = 20 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[11] = 30 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[12] = 50 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[13] = 100 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[14] = 200 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[15] = 500 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[16] = 1000 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[17] = 2000 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[18] = 5000 * (10 ** tatgTokenDecimals);
+        mingingPropPrices[19] = 10000 * (10 ** tatgTokenDecimals);
 
-    //运维人员使用，添加矿机燃料类型
-    function addFuelType(uint fuelType, uint256 price) onlyOwner public virtual {
-        //TODO 是否允许多次定义燃料价格，如果是则这里就这么写，如果不是则加判重条件
-        mingingFuelPrices[fuelType] = price;
-    }
+        //燃料定价
+        mingingFuelPrices[2] = 1 * (10 ** tatgTokenDecimals);
+        mingingFuelPrices[7] = 2 * (10 ** tatgTokenDecimals);
+        mingingFuelPrices[8] = 5 * (10 ** tatgTokenDecimals);
+        mingingFuelPrices[9] = 10 * (10 ** tatgTokenDecimals);
 
-    //运维人员使用，设置工具栏开通价格
-    function setOpenToolBar(uint index, uint256 price) onlyOwner public virtual {
-        //TODO 是否允许多次定义工具栏开通价格，如果是则这里就这么写，如果不是则加判重条件
-        toolBarPrices[index] = price;
-    }
-
-    //运维人员使用，设置背包栏开通价格
-    function setOpenBackpack(uint index, uint256 price) onlyOwner public virtual {
-        //TODO 是否允许多次定义背包栏开通价格，如果是则这里就这么写，如果不是则加判重条件
-        backpackPrices[index] = price;
+        //工具栏定价
+        toolBarPrice = 50 * usdtTokenDecimals;
+        backpackPrice = 10 * usdtTokenDecimals;
     }
 
     //获取矿机价格
@@ -125,11 +126,6 @@ contract UTSwap is Context, Ownable {
         emit BuyMiningFuel(msg.sender, fuelType);
     }
 
-    //获取开通工具栏价格
-    function getOpenToolBarPrice(uint index) public view virtual returns (uint256) {
-        return toolBarPrices[index];
-    }
-
     //获取用户工具栏索引
     function getUserToolBarIndex(address user) public view virtual returns (uint) {
         uint userToolBarSize = userToolBar[user].length;
@@ -143,9 +139,8 @@ contract UTSwap is Context, Ownable {
     //开通工具栏
     function openToolBar() public virtual {
         uint index = getUserToolBarIndex(msg.sender);
-        uint256 price = getOpenToolBarPrice(index);
-        require(price != 0, "The toolbar is not yet open");
-        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), price);
+        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), toolBarPrice);
+        userToolBar[msg.sender].push(index); 
         emit OpenToolBar(msg.sender, index);
     }
 
@@ -167,9 +162,8 @@ contract UTSwap is Context, Ownable {
     //开通背包栏
     function openBackpack() public virtual {
         uint index = getUserBackpackIndex(msg.sender);
-        uint256 price = getOpenBackpackPrice(index);
-        require(price != 0, "The backpack is not yet open");
-        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), price);
+        SafeERC20.safeTransferFrom(usdtToken, msg.sender, address(this), backpackPrice);
+        userBackpack[msg.sender].push(index);
         emit OpenBackpack(msg.sender, index);
     }
     
