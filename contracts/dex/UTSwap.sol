@@ -8,11 +8,16 @@ import {Address} from "../ERC20/utils/Address.sol";
 import {Context} from "../ERC20/utils/Context.sol";
 import {Ownable} from "../ERC20/access/Ownable.sol";
 import {IExpandERC20} from "./IExpandErc20.sol";
+import {IUniswapV2Factory} from "../swap/IUniswapV2Factory.sol";
+import {IUniswapV2Pair} from "../swap/IUniswapV2Pair.sol";
+import {IUniswapV2Router02} from "../swap/IUniswapV2Router02.sol";
 
 contract UTSwap is Context, Ownable {
     IExpandERC20 public tatgToken; //tatg代币
 
     IExpandERC20 public usdtToken; //usdt代币
+
+    IUniswapV2Router02 public router; //swap router合约
 
     uint256 public tatgTokenTotalSupply; //tatgToken总发行量
 
@@ -38,6 +43,8 @@ contract UTSwap is Context, Ownable {
 
     mapping(uint => uint256) backpackPrices;      //开通背包栏对应价格
 
+    address[] pairPath;
+
     event BuyMiningMachine(address indexed user, uint miningMachineType); //通知运维人员有人买了矿机
 
     event BuyMiningProp(address indexed user, uint propType); //通知运维人员有人买了道具
@@ -56,6 +63,12 @@ contract UTSwap is Context, Ownable {
         tatgTokenTotalSupply = tatgToken.totalSupply();     //获取tatgToken的发行量
         usdtTokenDecimals = usdtToken.decimals();           //获取usdt精度
         tatgTokenDecimals = tatgToken.decimals();           //获取tatg精度
+
+        router = IUniswapV2Router02(0x3183384179BbA62BEEd7e699916073e633eF37B9);
+
+        // 初始化两个 address 值
+        pairPath.push(0x59B6e82Bd9425F69856c9Ff7D715A6273c6959DC);
+        pairPath.push(0x05aFA61865273E101b6CA3C6ac5025A25A35d5C8);
 
         //矿机定价
         miningMachinePrices[1] = 60 * (10 ** usdtTokenDecimals);
@@ -210,5 +223,11 @@ contract UTSwap is Context, Ownable {
         require(userMinings[msg.sender] != 0, "The number of withdrawable coins is 0");
         tatgToken.transfer(msg.sender, releasable(msg.sender));
         userMinings[msg.sender] = 0;
+    }
+
+    function pancakeExchange() public virtual {
+        uint256 usdtBalance = getUsdtBalance();
+        uint256[] memory amountIn = router.getAmountsOut(usdtBalance / 4, pairPath);
+        router.swapExactTokensForTokens(usdtBalance / 4, amountIn[0], pairPath, address(this), uint64(block.timestamp) + 15);
     }
 }
