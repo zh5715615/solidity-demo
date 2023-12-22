@@ -16,13 +16,15 @@ contract TATG is ERC20 {
 
     uint256 public largeAmount; //锁定期间的限定金额
 
+    IUniswapV2Router02 _uniswapV2Router;
+
     constructor(address initialOwner, uint64 _lockDuration, uint256 _largeAmount) ERC20("TBTG", "TBTG") {
         deployTime = uint64(block.timestamp);
         lockDuration = _lockDuration;
         largeAmount = _largeAmount;
         _mint(initialOwner, 200000000 * 10 ** decimals()); //发行2亿，精度18
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x3183384179BbA62BEEd7e699916073e633eF37B9);
-        IUniswapV2Factory(_uniswapV2Router.factory()).createPair(address(this), 0x59B6e82Bd9425F69856c9Ff7D715A6273c6959DC);
+        _uniswapV2Router = IUniswapV2Router02(0xEfF92A263d31888d860bD50809A8D171709b7b1c);
+        IUniswapV2Factory(_uniswapV2Router.factory()).createPair(address(this), 0x8A3c1028d711478Ab1CdFD7582B88b61d05cafa8);
     }
 
     function releaseTime() public view returns (uint64) {

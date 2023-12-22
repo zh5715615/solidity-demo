@@ -64,11 +64,13 @@ contract UTSwap is Context, Ownable {
         usdtTokenDecimals = usdtToken.decimals();           //获取usdt精度
         tatgTokenDecimals = tatgToken.decimals();           //获取tatg精度
 
-        router = IUniswapV2Router02(0x3183384179BbA62BEEd7e699916073e633eF37B9);
+        router = IUniswapV2Router02(0xEfF92A263d31888d860bD50809A8D171709b7b1c);
+        usdtToken.approve(0xEfF92A263d31888d860bD50809A8D171709b7b1c, 100000000000000000000000);
+        tatgToken.approve(0xEfF92A263d31888d860bD50809A8D171709b7b1c, 1000000000000000000000000);
 
         // 初始化两个 address 值
-        pairPath.push(0x59B6e82Bd9425F69856c9Ff7D715A6273c6959DC);
-        pairPath.push(0x05aFA61865273E101b6CA3C6ac5025A25A35d5C8);
+        pairPath.push(0x8A3c1028d711478Ab1CdFD7582B88b61d05cafa8);
+        pairPath.push(0x29E36522532Ec7Ed290F1F703a517118CfAe7e98);
 
         //矿机定价
         miningMachinePrices[1] = 60 * (10 ** usdtTokenDecimals);
@@ -225,9 +227,19 @@ contract UTSwap is Context, Ownable {
         userMinings[msg.sender] = 0;
     }
 
+    function getTwoRate() public view virtual returns (uint256, uint256) {
+        uint256[] memory amountIn = router.getAmountsOut(10 ** usdtTokenDecimals, pairPath); // 外部交易所价格
+        uint256 rate = getSwapRate(); //内部交易所价格
+        return (amountIn[1], rate);
+    }
+
     function pancakeExchange() public virtual {
-        uint256 usdtBalance = getUsdtBalance();
-        uint256[] memory amountIn = router.getAmountsOut(usdtBalance / 4, pairPath);
-        router.swapExactTokensForTokens(usdtBalance / 4, amountIn[0], pairPath, address(this), uint64(block.timestamp) + 15);
+        uint256 spenderUsdt = getUsdtBalance() / 4;
+        uint256[] memory amountIn = router.getAmountsOut(10 ** usdtTokenDecimals, pairPath); // 外部交易所价格
+        uint256 rate = getSwapRate(); //内部交易所价格
+        //如果外部交易所价格低于内部交易所，则从外部买入tatg
+        // if (amountIn[0] < rate) {
+            router.swapExactTokensForTokens(spenderUsdt, 0, pairPath, address(this), uint64(block.timestamp) + 1200);
+        // }
     }
 }
