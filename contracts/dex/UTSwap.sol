@@ -57,20 +57,22 @@ contract UTSwap is Context, Ownable {
 
     event Transfer(address indexed user, uint256 tatgNumber); //通知运维人员卖出了tatg
 
-    constructor(address beneficiary, address tatgAddress, address usdtAddress) payable Ownable(beneficiary) {
+    event Withdrawal(address indexed user); //通知运维人员提取奖励
+
+    constructor(address beneficiary, address tatgAddress, address usdtAddress, address pancakeRouterAddress) payable Ownable(beneficiary) {
         tatgToken = IExpandERC20(tatgAddress);              //初始化tatg代币合约
         usdtToken = IExpandERC20(usdtAddress);              //初始化usdt代币合约
         tatgTokenTotalSupply = tatgToken.totalSupply();     //获取tatgToken的发行量
         usdtTokenDecimals = usdtToken.decimals();           //获取usdt精度
         tatgTokenDecimals = tatgToken.decimals();           //获取tatg精度
 
-        router = IUniswapV2Router02(0xEfF92A263d31888d860bD50809A8D171709b7b1c);
-        usdtToken.approve(0xEfF92A263d31888d860bD50809A8D171709b7b1c, 100000000000000000000000);
-        tatgToken.approve(0xEfF92A263d31888d860bD50809A8D171709b7b1c, 1000000000000000000000000);
+        router = IUniswapV2Router02(pancakeRouterAddress);
+        usdtToken.approve(pancakeRouterAddress, 100000 * (10 ** usdtTokenDecimals));
+        tatgToken.approve(pancakeRouterAddress, 100000000 * (10 ** tatgTokenDecimals));
 
         // 初始化两个 address 值
-        pairPath.push(0x8A3c1028d711478Ab1CdFD7582B88b61d05cafa8);
-        pairPath.push(0x29E36522532Ec7Ed290F1F703a517118CfAe7e98);
+        pairPath.push(tatgAddress);
+        pairPath.push(usdtAddress);
 
         //矿机定价
         miningMachinePrices[1] = 60 * (10 ** usdtTokenDecimals);
@@ -212,34 +214,28 @@ contract UTSwap is Context, Ownable {
 
     //分配奖励，运维账号权限
     function allocReward(address user, uint256 rewardAmount) onlyOwner public virtual {
-        userMinings[user] = userMinings[user] + rewardAmount;
+        SafeERC20.safeTransfer(tatgToken, user, rewardAmount);
     }
 
-    //可提币数量
-    function releasable(address user) public view virtual returns (uint256) {
-        return userMinings[user];
-    }
-
-    //提币
+    //发起提币请求
     function withdrawal() public virtual {
-        require(userMinings[msg.sender] != 0, "The number of withdrawable coins is 0");
-        tatgToken.transfer(msg.sender, releasable(msg.sender));
-        userMinings[msg.sender] = 0;
+        emit Withdrawal(msg.sender);
     }
 
+    //获取pancake和内置交易所1个tatg值多少个usdt
     function getTwoRate() public view virtual returns (uint256, uint256) {
-        uint256[] memory amountIn = router.getAmountsOut(10 ** usdtTokenDecimals, pairPath); // 外部交易所价格
+        uint256[] memory amountIn = router.getAmountsOut(10 ** tatgTokenDecimals, pairPath); // 外部交易所价格
         uint256 rate = getSwapRate(); //内部交易所价格
         return (amountIn[1], rate);
     }
 
+    //从pancake上购买tatg
     function pancakeExchange() public virtual {
         uint256 spenderUsdt = getUsdtBalance() / 4;
-        uint256[] memory amountIn = router.getAmountsOut(10 ** usdtTokenDecimals, pairPath); // 外部交易所价格
-        uint256 rate = getSwapRate(); //内部交易所价格
+        (uint256 pancakeRate, uint256 thisRate) = getTwoRate();
         //如果外部交易所价格低于内部交易所，则从外部买入tatg
-        // if (amountIn[0] < rate) {
+        if (pancakeRate <= thisRate) {
             router.swapExactTokensForTokens(spenderUsdt, 0, pairPath, address(this), uint64(block.timestamp) + 1200);
-        // }
+        }
     }
 }
