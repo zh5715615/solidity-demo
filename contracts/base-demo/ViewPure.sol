@@ -56,4 +56,8 @@ contract ViewPure {
         uint swapUsdtAmount = (tatgNumber * rate) / tatgMinUint;
         return swapUsdtAmount;
     }
+
+    function div(uint256 tatgNumber) public view returns (uint256) {
+        return tatgNumber / 4;
+    }
 }

@@ -204,6 +204,7 @@ contract UTSwap is Context, Ownable {
 
     //交易
     function transfer(uint256 tatgNumber) public virtual {
+        require(tatgNumber != 0, "Exchange tatg number can't be 0");
         uint256 rate = getSwapRate();
         uint256 tatgMinUint = 10 ** tatgTokenDecimals;
         uint swapUsdtAmount = ((tatgNumber * rate) / tatgMinUint)  / 2;
@@ -214,6 +215,7 @@ contract UTSwap is Context, Ownable {
 
     //分配奖励，运维账号权限
     function allocReward(address user, uint256 rewardAmount) onlyOwner public virtual {
+        require(rewardAmount != 0, "Alloc reward tatg number can't be 0");
         SafeERC20.safeTransfer(tatgToken, user, rewardAmount);
     }
 
@@ -235,7 +237,10 @@ contract UTSwap is Context, Ownable {
         (uint256 pancakeRate, uint256 thisRate) = getTwoRate();
         //如果外部交易所价格低于内部交易所，则从外部买入tatg
         if (pancakeRate <= thisRate) {
-            router.swapExactTokensForTokens(spenderUsdt, 0, pairPath, address(this), uint64(block.timestamp) + 1200);
+            address[] memory payPath = new address[](2);
+            payPath[0] = pairPath[1];
+            payPath[1] = pairPath[0];
+            router.swapExactTokensForTokens(spenderUsdt, 0, payPath, address(this), uint64(block.timestamp) + 1200);
         }
     }
 }
