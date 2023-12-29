@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.17;
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
+// import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
 
 contract ViewPure {
     string value = "Hello";
@@ -31,10 +31,10 @@ contract ViewPure {
     }
 
     // 数字转十六进制字符串
-    function toHexString() public view returns (string memory) {
-        string memory hexStr = Strings.toHexString(number);
-        return hexStr;
-    }
+    // function toHexString() public view returns (string memory) {
+    //     string memory hexStr = Strings.toHexString(number);
+    //     return hexStr;
+    // }
 
     //string转bytes, 测试keccak256算法
     function testKeccak256(string memory str) public pure returns (bytes32) {
