@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/ERC20.sol)
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.17;
 
 import {IERC20} from "./IERC20.sol";
 import {IERC20Metadata} from "./extensions/IERC20Metadata.sol";
@@ -32,9 +32,9 @@ import {IERC20Errors} from "./interfaces/draft-IERC6093.sol";
  * these events, as it isn't required by the specification.
  */
 abstract contract ERC20 is Context, IERC20, IERC20Metadata, IERC20Errors {
-    mapping(address account => uint256) private _balances;
+    mapping(address => uint256) private _balances;
 
-    mapping(address account => mapping(address spender => uint256)) private _allowances;
+    mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
 

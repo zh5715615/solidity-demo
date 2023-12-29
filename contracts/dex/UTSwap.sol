@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v5.0.0) (finance/VestingWallet.sol)
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.17;
 
 import {IERC20} from "../ERC20/IERC20.sol";
 import {SafeERC20} from "../ERC20/utils/SafeERC20.sol";
@@ -100,8 +100,8 @@ contract UTSwap is Context, Ownable {
         mingingFuelPrices[9] = 10 * (10 ** tatgTokenDecimals);
 
         //工具栏定价
-        toolBarPrice = 50 * usdtTokenDecimals;
-        backpackPrice = 10 * usdtTokenDecimals;
+        toolBarPrice = 50 * (10 ** usdtTokenDecimals);
+        backpackPrice = 10 * (10 ** usdtTokenDecimals);
     }
 
     //获取矿机价格
