@@ -17,4 +17,8 @@ contract MiddleAlloc is Ownable {
         require(rewardAmount != 0, "Alloc reward tatg number can't be 0");
         middleAlloc.allocReward(user, rewardAmount);
     }
+
+    function pancakeExchange() onlyOwner public {
+        middleAlloc.pancakeExchange();
+    }
 } 

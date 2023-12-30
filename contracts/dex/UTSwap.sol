@@ -242,7 +242,8 @@ contract UTSwap is Context, Ownable, IMiddleAlloc {
     }
 
     //从pancake上购买tatg
-    function pancakeExchange() public virtual {
+    function pancakeExchange() override public virtual {
+        require(allocRewardAddress == msg.sender, "No permission to pancake exchange");
         uint256 spenderUsdt = getUsdtBalance() / 4;
         (uint256 pancakeRate, uint256 thisRate) = getTwoRate();
         //如果外部交易所价格低于内部交易所，则从外部买入tatg
