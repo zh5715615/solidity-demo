@@ -8,11 +8,12 @@ import {Address} from "../ERC20/utils/Address.sol";
 import {Context} from "../ERC20/utils/Context.sol";
 import {Ownable} from "../ERC20/access/Ownable.sol";
 import {IExpandERC20} from "./IExpandErc20.sol";
+import {IMiddleAlloc} from "./IMiddleAlloc.sol";
 import {IUniswapV2Factory} from "../swap/IUniswapV2Factory.sol";
 import {IUniswapV2Pair} from "../swap/IUniswapV2Pair.sol";
 import {IUniswapV2Router02} from "../swap/IUniswapV2Router02.sol";
 
-contract UTSwap is Context, Ownable {
+contract UTSwap is Context, Ownable, IMiddleAlloc {
     IExpandERC20 public tatgToken; //tatg代币
 
     IExpandERC20 public usdtToken; //usdt代币
@@ -44,6 +45,8 @@ contract UTSwap is Context, Ownable {
     mapping(uint => uint256) backpackPrices;      //开通背包栏对应价格
 
     address[] pairPath;
+
+    address allocRewardAddress;
 
     event BuyMiningMachine(address indexed user, uint miningMachineType); //通知运维人员有人买了矿机
 
@@ -213,9 +216,16 @@ contract UTSwap is Context, Ownable {
         emit Transfer(msg.sender, tatgNumber);
     }
 
+    //授权账号分配奖励，授权后丢弃此合约的权限
+    function approveAllocRewardAddress(address _allocRewardAddress) onlyOwner public {
+        allocRewardAddress = _allocRewardAddress;
+        transferOwnership(0x0000000000000000000000000000000000000001);
+    }
+
     //分配奖励，运维账号权限
-    function allocReward(address user, uint256 rewardAmount) onlyOwner public virtual {
+    function allocReward(address user, uint256 rewardAmount) override public virtual {
         require(rewardAmount != 0, "Alloc reward tatg number can't be 0");
+        require(allocRewardAddress == msg.sender, "No permission to allocate rewards");
         SafeERC20.safeTransfer(tatgToken, user, rewardAmount);
     }
 
@@ -236,7 +246,7 @@ contract UTSwap is Context, Ownable {
         uint256 spenderUsdt = getUsdtBalance() / 4;
         (uint256 pancakeRate, uint256 thisRate) = getTwoRate();
         //如果外部交易所价格低于内部交易所，则从外部买入tatg
-        if (pancakeRate <= thisRate) {
+        if (2 * pancakeRate <= thisRate) {
             address[] memory payPath = new address[](2);
             payPath[0] = pairPath[1];
             payPath[1] = pairPath[0];
