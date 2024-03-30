@@ -105,3 +105,6 @@ dist
 
 .deps
 contracts/build-info
+
+**/artifacts/
+artifacts/
