@@ -60,4 +60,10 @@ contract ViewPure {
     function div(uint256 tatgNumber) public view returns (uint256) {
         return tatgNumber / 4;
     }
+
+    // 定义一个函数来验证签名的地址
+    function recoverSignerFromSignature(bytes32 hash, uint8 v, bytes32 r, bytes32 s) public view returns (address) {
+        address signer = ecrecover(hash, v, r, s);
+        return signer;
+    }
 }
