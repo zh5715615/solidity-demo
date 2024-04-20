@@ -108,3 +108,5 @@ contracts/build-info
 
 **/artifacts/
 artifacts/
+
+.states
