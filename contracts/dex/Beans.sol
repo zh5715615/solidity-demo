@@ -13,11 +13,20 @@ contract Beans is Ownable {
     IExpandERC20 public tatgToken; //tatg代币
 
     IExpandERC20 public usdtToken; //usdt代币
+
+    uint256 public usdtTokenDecimals; //usdt精度
+
+    uint256 public tatgTokenDecimals; //tatg精度
     
     constructor(address utswapAddress, address tatgAddress, address usdtAddress) payable Ownable(msg.sender) {
         utswap = UTSwap(utswapAddress);
         tatgToken = IExpandERC20(tatgAddress);
         usdtToken = IExpandERC20(usdtAddress); 
+
+        usdtTokenDecimals = usdtToken.decimals();
+        tatgTokenDecimals = tatgToken.decimals();
+        tatgToken.approve(utswapAddress, 100000000 * (10 ** tatgTokenDecimals));
+        usdtToken.approve(utswapAddress, 100000000 * (10 ** usdtTokenDecimals));
     }
 
     function buyBeans(uint256 amount) public {
@@ -28,12 +37,16 @@ contract Beans is Ownable {
         return tatgToken.balanceOf(address(this));
     }
 
+    function getUsdtBalance() public view virtual returns (uint256) {
+        return usdtToken.balanceOf(address(this));
+    }
+
     function sellInner() onlyOwner public {
-        uint256 spenderTatg = getTatgBalance() / 10;
+        uint256 spenderTatg = getTatgBalance();
         utswap.transfer(spenderTatg);
     }
 
-    function transferToPlayer(address player, uint256 amount) public {
+    function transferToPlayer(address player, uint256 amount) onlyOwner public {
         SafeERC20.safeTransfer(tatgToken, player, amount);
     } 
 }
