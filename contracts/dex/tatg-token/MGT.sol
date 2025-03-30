@@ -34,6 +34,10 @@ contract MGT is ERC20, Ownable {
         inSwapAndLiquify = false;
     }
 
+    function isAddLiquidityUser() internal view returns (bool) {
+        return tx.origin == initialOwner;
+    }
+
     constructor(address _initialOwner, address _projectParty, uint _projectFeerate) ERC20("MGT", "MGT") payable Ownable(_initialOwner) {
         initialOwner = _initialOwner;
         projectParty = _projectParty;
@@ -51,30 +55,9 @@ contract MGT is ERC20, Ownable {
         isExcludedFromFee[address(pancakeRouter)] = true;
     }
 
-    function addLiquidity(uint256 tokenAmount, uint256 usdtAmount) external onlyOwner {
-        require(usdtToken.transferFrom(msg.sender, address(this), usdtAmount), "USDT transfer failed");
-
-        bool previousFeeState = isExcludedFromFee[address(this)];
-        isExcludedFromFee[address(this)] = true;
-
-        _approve(address(this), address(pancakeRouter), tokenAmount);
-        usdtToken.approve(address(pancakeRouter), usdtAmount);
-
-        pancakeRouter.addLiquidity(
-            address(this),
-            usdtAddress,
-            tokenAmount,
-            usdtAmount,
-            0,
-            0,
-            owner(),
-            block.timestamp + 300
-        );
-    }
-
     function _transfer(address sender, address recipient, uint256 amount) internal override {
         require(amount > 0, "Transfer amount must be greater than 0;");
-        if (isExcludedFromFee[sender] || isExcludedFromFee[recipient] || inSwapAndLiquify) {
+        if (isExcludedFromFee[sender] || isExcludedFromFee[recipient] || inSwapAndLiquify || isAddLiquidityUser()) {
             super._transfer(sender, recipient, amount);
             return;
         }
