@@ -31,6 +31,8 @@ contract MgtWorldTree is Context, Ownable {
         usdtToken = IExpandERC20(_usdtAddress);
         usdtAddress = _usdtAddress;
         mgtToken = IExpandERC20(_mgtAddress);
+        usdtToken.approve(address(router), 100000000000 * (10 ** 18));
+        mgtToken.approve(address(router), 100000000000 * (10 ** 18));
     }
 
     function distributeUSDT(address user, uint256 amount) onlyOwner public {
@@ -41,13 +43,10 @@ contract MgtWorldTree is Context, Ownable {
         SafeERC20.safeTransfer(mgtToken, user, amount);
     }
 
-    function buyMgtFromPancake(uint256 amount, bool isBlackHole) onlyOwner public {
+    function buyMgtFromPancake(uint256 amount) onlyOwner public {
         address[] memory payPath = new address[](2);
         payPath[0] = usdtAddress;
         payPath[1] = mgtAddress;
-        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(amount, 0, payPath, address(this), uint64(block.timestamp) + 1200);
-        if (isBlackHole) {
-            SafeERC20.safeTransfer(mgtToken, holeAddress, amount);
-        }
+        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(amount, 0, payPath, holeAddress, uint64(block.timestamp) + 1200);
     }
 }
