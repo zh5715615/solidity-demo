@@ -2,14 +2,11 @@
 // OpenZeppelin Contracts (last updated v5.0.0) (finance/VestingWallet.sol)
 pragma solidity ^0.8.17;
 
-import {IERC20} from "../ERC20/IERC20.sol";
 import {SafeERC20} from "../ERC20/utils/SafeERC20.sol";
 import {Address} from "../ERC20/utils/Address.sol";
 import {Context} from "../ERC20/utils/Context.sol";
 import {Ownable} from "../ERC20/access/Ownable.sol";
 import {IExpandERC20} from "./IExpandErc20.sol";
-import {IUniswapV2Factory} from "../swap/IUniswapV2Factory.sol";
-import {IUniswapV2Pair} from "../swap/IUniswapV2Pair.sol";
 import {IUniswapV2Router02} from "../swap/IUniswapV2Router02.sol";
 
 contract MgtWorldTree is Context, Ownable {
@@ -35,11 +32,21 @@ contract MgtWorldTree is Context, Ownable {
         mgtToken.approve(address(router), 100000000000 * (10 ** 18));
     }
 
+    function getUsdtBalance() public view virtual returns (uint256) {
+        return usdtToken.balanceOf(address(this));
+    }
+
+    function getMgtBalance() public view virtual returns (uint256) {
+        return mgtToken.balanceOf(address(this));
+    }
+
     function distributeUSDT(address user, uint256 amount) onlyOwner public {
+        require(getUsdtBalance() > amount, "USDT balance not enough");
         SafeERC20.safeTransfer(usdtToken, user, amount);
     }
 
     function distributeMGT(address user, uint256 amount) onlyOwner public {
+        require(getMgtBalance() > amount, "MGT balance not enough");
         SafeERC20.safeTransfer(mgtToken, user, amount);
     }
 
@@ -47,6 +54,7 @@ contract MgtWorldTree is Context, Ownable {
         address[] memory payPath = new address[](2);
         payPath[0] = usdtAddress;
         payPath[1] = mgtAddress;
+        require(getUsdtBalance() > amount, "USDT balance not enough");
         router.swapExactTokensForTokensSupportingFeeOnTransferTokens(amount, 0, payPath, holeAddress, uint64(block.timestamp) + 1200);
     }
 }
