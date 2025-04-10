@@ -38,11 +38,12 @@ contract MGT is ERC20, Ownable {
         return tx.origin == initialOwner;
     }
 
-    constructor(address _initialOwner, address _projectParty, uint _projectFeerate) ERC20("MGT", "MGT") payable Ownable(_initialOwner) {
+    constructor(address _initialOwner, address _projectParty, uint _projectFeerate, address pancakeRouterAddress) ERC20("MGT", "MGT") payable Ownable(_initialOwner) {
         initialOwner = _initialOwner;
         projectParty = _projectParty;
         projectFeerate = _projectFeerate;
-        pancakeRouter = IUniswapV2Router02(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
+        //测试网：0xD99D1c33F9fC3444f8101754aBC46c52416550D1
+        pancakeRouter = IUniswapV2Router02(pancakeRouterAddress);
         //发行1亿，精度18
         _mint(initialOwner, 99990000 * 10 ** decimals()); //其中99990000给发行者
         _mint(address(this), 10000 * 10 ** decimals()); //其中10000给合约自己，创建流通池用
@@ -57,6 +58,7 @@ contract MGT is ERC20, Ownable {
 
     function _transfer(address sender, address recipient, uint256 amount) internal override {
         require(amount > 0, "Transfer amount must be greater than 0;");
+        require(balanceOf(sender) >= amount, "Insufficient balance");
         if (isExcludedFromFee[sender] || isExcludedFromFee[recipient] || inSwapAndLiquify || isAddLiquidityUser()) {
             super._transfer(sender, recipient, amount);
             return;
